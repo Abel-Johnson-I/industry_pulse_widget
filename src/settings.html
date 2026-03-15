@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Industry Pulse — Settings</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0f0f14;
+    --surface: #1a1a22;
+    --border: rgba(255,255,255,0.09);
+    --accent-elec: #4ECDC4;
+    --accent-ai: #A78BFA;
+    --text: rgba(255,255,255,0.88);
+    --text-dim: rgba(255,255,255,0.45);
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .setting-row:last-child { border-bottom: none; }
+
+  .setting-label {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  .setting-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  /* Toggle switch */
+  .toggle {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.12);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .toggle input:checked + .toggle-track { background: var(--accent-elec); }
+
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+
+  .toggle input:checked + .toggle-track::after { transform: translateX(16px); }
+
+  /* Select */
+  select {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    padding: 4px 8px;
+    cursor: pointer;
+    outline: none;
+  }
+
+  select:focus { border-color: var(--accent-elec); }
+
+  /* Save button */
+  #btn-save {
+    width: 100%;
+    padding: 11px;
+    background: var(--accent-elec);
+    border: none;
+    border-radius: var(--radius);
+    color: #0a1a19;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: opacity 0.15s;
+  }
+
+  #btn-save:hover { opacity: 0.85; }
+
+  .color-elec { color: var(--accent-elec); }
+  .color-ai { color: var(--accent-ai); }
+</style>
+</head>
+<body>
+<h1>⚙ Industry Pulse Settings</h1>
+
+<!-- Appearance -->
+<div class="section">
+  <div class="section-title">Appearance</div>
+
+  <div class="setting-row">
+    <div>
+      <div class="setting-label">Theme</div>
+    </div>
+    <select id="setting-theme">
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+      <option value="auto">Auto (System)</option>
+    </select>
+  </div>
+
+  <div class="setting-row">
+    <div>
+      <div class="setting-label">Compact Mode</div>
+      <div class="setting-desc">Show only top 3 headlines per section</div>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="setting-compact">
+      <div class="toggle-track"></div>
+    </label>
+  </div>
+
+  <div class="setting-row">
+    <div>
+      <div class="setting-label">Opacity</div>
+    </div>
+    <select id="setting-opacity">
+      <option value="1.0">100%</option>
+      <option value="0.95">95%</option>
+      <option value="0.85">85%</option>
+      <option value="0.75">75%</option>
+      <option value="0.60">60%</option>
+    </select>
+  </div>
+</div>
+
+<!-- Behavior -->
+<div class="section">
+  <div class="section-title">Behavior</div>
+
+  <div class="setting-row">
+    <div>
+      <div class="setting-label">Always on Top</div>
+      <div class="setting-desc">Widget floats above other windows</div>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="setting-alwaysontop">
+      <div class="toggle-track"></div>
+    </label>
+  </div>
+
+  <div class="setting-row">
+    <div>
+      <div class="setting-label">Refresh Interval</div>
+    </div>
+    <select id="setting-interval">
+      <option value="30">30 min</option>
+      <option value="60">1 hour</option>
+      <option value="120">2 hours</option>
+      <option value="180">3 hours</option>
+    </select>
+  </div>
+</div>
+
+<!-- News Categories -->
+<div class="section">
+  <div class="section-title">News Categories</div>
+
+  <div class="setting-row">
+    <div>
+      <div class="setting-label"><span class="color-elec">⬤</span> Electronics Industry</div>
+      <div class="setting-desc">Semiconductors, hardware, chips, PCB, EDA</div>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="setting-show-elec">
+      <div class="toggle-track"></div>
+    </label>
+  </div>
+
+  <div class="setting-row">
+    <div>
+      <div class="setting-label"><span class="color-ai">⬤</span> AI World</div>
+      <div class="setting-desc">Models, releases, policy, enterprise AI</div>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="setting-show-ai">
+      <div class="toggle-track"></div>
+    </label>
+  </div>
+</div>
+
+<button id="btn-save">Save Settings</button>
+
+<script>
+async function init() {
+  const settings = await window.electronAPI.getSettings();
+
+  document.getElementById('setting-theme').value = settings.theme || 'dark';
+  document.getElementById('setting-compact').checked = !!settings.compact;
+  document.getElementById('setting-alwaysontop').checked = settings.alwaysOnTop !== false;
+  document.getElementById('setting-interval').value = String(settings.refreshInterval || 60);
+  document.getElementById('setting-opacity').value = String(settings.opacity || 0.95);
+  document.getElementById('setting-show-elec').checked = settings.showElectronics !== false;
+  document.getElementById('setting-show-ai').checked = settings.showAI !== false;
+
+  document.getElementById('btn-save').addEventListener('click', async () => {
+    const newSettings = {
+      ...settings,
+      theme: document.getElementById('setting-theme').value,
+      compact: document.getElementById('setting-compact').checked,
+      alwaysOnTop: document.getElementById('setting-alwaysontop').checked,
+      refreshInterval: parseInt(document.getElementById('setting-interval').value),
+      opacity: parseFloat(document.getElementById('setting-opacity').value),
+      showElectronics: document.getElementById('setting-show-elec').checked,
+      showAI: document.getElementById('setting-show-ai').checked
+    };
+
+    await window.electronAPI.saveSettings(newSettings);
+    const btn = document.getElementById('btn-save');
+    btn.textContent = 'Saved ✓';
+    btn.style.background = '#4ADE80';
+    setTimeout(() => {
+      btn.textContent = 'Save Settings';
+      btn.style.background = '';
+      window.close();
+    }, 1200);
+  });
+}
+
+init();
+</script>
+</body>
+</html>

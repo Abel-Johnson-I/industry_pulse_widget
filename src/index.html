@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industry Pulse</title>
+<style>
+  /* ── Google Fonts ── */
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@300;400&display=swap');
+
+  /* ── CSS Variables ── */
+  :root {
+    --bg: rgba(13, 13, 18, 0.92);
+    --bg-section: rgba(255,255,255,0.04);
+    --bg-hover: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.07);
+    --accent-elec: #4ECDC4;
+    --accent-ai: #A78BFA;
+    --text-primary: rgba(255,255,255,0.90);
+    --text-secondary: rgba(255,255,255,0.45);
+    --text-meta: rgba(255,255,255,0.30);
+    --dot-new: #4ADE80;
+    --radius: 16px;
+    --radius-sm: 8px;
+    --font: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+  }
+
+  [data-theme="light"] {
+    --bg: rgba(248, 248, 250, 0.94);
+    --bg-section: rgba(0,0,0,0.03);
+    --bg-hover: rgba(0,0,0,0.05);
+    --border: rgba(0,0,0,0.07);
+    --accent-elec: #0E9F8E;
+    --accent-ai: #7C3AED;
+    --text-primary: rgba(10,10,20,0.90);
+    --text-secondary: rgba(10,10,20,0.50);
+    --text-meta: rgba(10,10,20,0.35);
+    --shadow: 0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Widget Shell ── */
+  #widget {
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    transition: opacity 0.3s ease;
+  }
+
+  /* ── Drag bar / Title row ── */
+  #titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+    -webkit-app-region: drag;
+    user-select: none;
+    flex-shrink: 0;
+  }
+
+  #title-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #app-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #app-icon svg { width: 18px; height: 18px; }
+
+  #app-name {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+    opacity: 0.7;
+  }
+
+  #title-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    -webkit-app-region: no-drag;
+  }
+
+  .ctrl-btn {
+    width: 26px;
+    height: 26px;
+    border: none;
+    background: var(--bg-section);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: background 0.15s, color 0.15s;
+    padding: 0;
+  }
+
+  .ctrl-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .ctrl-btn svg { width: 13px; height: 13px; }
+
+  /* ── Status bar ── */
+  #statusbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px 10px;
+    flex-shrink: 0;
+  }
+
+  #last-updated {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-meta);
+    letter-spacing: 0.02em;
+  }
+
+  #status-indicators {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  #offline-badge {
+    display: none;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #F97316;
+    background: rgba(249,115,22,0.12);
+    border: 1px solid rgba(249,115,22,0.25);
+    border-radius: 4px;
+    padding: 2px 6px;
+  }
+
+  #offline-badge.visible { display: flex; }
+
+  /* Spinning refresh dot */
+  #refresh-indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-meta);
+    transition: background 0.2s;
+    display: none;
+  }
+
+  #refresh-indicator.active {
+    display: block;
+    background: var(--accent-elec);
+    animation: pulse-dot 1s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  /* ── Scrollable content area ── */
+  #content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 12px 12px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
+
+  #content::-webkit-scrollbar { width: 3px; }
+  #content::-webkit-scrollbar-track { background: transparent; }
+  #content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 10px;
+    background: var(--bg-section);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .section-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .section-count {
+    font-size: 9px;
+    font-family: var(--font-mono);
+    color: var(--text-meta);
+  }
+
+  /* ── News items ── */
+  .news-list { padding: 4px 0; }
+
+  .news-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.12s;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .news-item:last-child { border-bottom: none; }
+  .news-item:hover { background: var(--bg-hover); }
+
+  .news-item.is-new::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 60%;
+    background: var(--dot-new);
+    border-radius: 0 2px 2px 0;
+  }
+
+  .news-title {
+    font-size: 12px;
+    font-weight: 450;
+    line-height: 1.45;
+    color: var(--text-primary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .news-item:hover .news-title { color: white; }
+
+  .news-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .news-source {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-meta);
+    flex-shrink: 0;
+  }
+
+  .news-sep {
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: var(--text-meta);
+    flex-shrink: 0;
+  }
+
+  .news-time {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-meta);
+  }
+
+  /* ── Empty / loading state ── */
+  .state-placeholder {
+    padding: 20px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .placeholder-text {
+    font-size: 11px;
+    color: var(--text-meta);
+  }
+
+  /* ── Skeleton loaders ── */
+  .skeleton-item {
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .skeleton-item:last-child { border-bottom: none; }
+
+  .skel {
+    background: linear-gradient(90deg,
+      rgba(255,255,255,0.04) 25%,
+      rgba(255,255,255,0.09) 50%,
+      rgba(255,255,255,0.04) 75%
+    );
+    background-size: 200% 100%;
+    border-radius: 4px;
+    animation: shimmer 1.5s infinite;
+  }
+
+  [data-theme="light"] .skel {
+    background: linear-gradient(90deg,
+      rgba(0,0,0,0.04) 25%,
+      rgba(0,0,0,0.09) 50%,
+      rgba(0,0,0,0.04) 75%
+    );
+    background-size: 200% 100%;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .skel-title { height: 12px; width: 90%; }
+  .skel-title-short { height: 12px; width: 65%; }
+  .skel-meta { height: 10px; width: 40%; }
+
+  /* ── Divider ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 12px;
+  }
+
+  /* ── Fade in animation ── */
+  .fade-in {
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+</style>
+</head>
+<body>
+<div id="widget">
+
+  <!-- Title bar -->
+  <div id="titlebar">
+    <div id="title-left">
+      <div id="app-icon">
+        <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="1" width="7" height="7" rx="2" fill="#4ECDC4" opacity="0.9"/>
+          <rect x="10" y="1" width="7" height="7" rx="2" fill="#A78BFA" opacity="0.9"/>
+          <rect x="1" y="10" width="7" height="7" rx="2" fill="#4ECDC4" opacity="0.4"/>
+          <rect x="10" y="10" width="7" height="7" rx="2" fill="#A78BFA" opacity="0.4"/>
+        </svg>
+      </div>
+      <span id="app-name">Industry Pulse</span>
+    </div>
+    <div id="title-right">
+      <!-- Refresh -->
+      <button class="ctrl-btn" id="btn-refresh" title="Refresh now">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 7a6 6 0 1 0 1.22-3.7"/>
+          <polyline points="1 2 1 6 5 6"/>
+        </svg>
+      </button>
+      <!-- Settings -->
+      <button class="ctrl-btn" id="btn-settings" title="Settings">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="7" cy="7" r="2"/>
+          <path d="M7 1v1.5M7 11.5V13M1 7h1.5M11.5 7H13M2.9 2.9l1.1 1.1M10 10l1.1 1.1M2.9 11.1L4 10M10 4l1.1-1.1"/>
+        </svg>
+      </button>
+      <!-- Minimize -->
+      <button class="ctrl-btn" id="btn-minimize" title="Hide to tray">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <line x1="2" y1="9" x2="12" y2="9"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div id="statusbar">
+    <span id="last-updated">–</span>
+    <div id="status-indicators">
+      <span id="offline-badge">OFFLINE</span>
+      <div id="refresh-indicator"></div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div id="content">
+    <!-- Electronics section -->
+    <div class="section" id="section-electronics">
+      <div class="section-header">
+        <div class="section-label">
+          <div class="section-dot" style="background: #4ECDC4"></div>
+          <span class="section-title">Electronics Industry</span>
+        </div>
+        <span class="section-count" id="elec-count">—</span>
+      </div>
+      <div class="news-list" id="elec-list">
+        <!-- Skeleton -->
+        <div class="skeleton-item"><div class="skel skel-title"></div><div class="skel skel-meta"></div></div>
+        <div class="skeleton-item"><div class="skel skel-title-short"></div><div class="skel skel-meta"></div></div>
+        <div class="skeleton-item"><div class="skel skel-title"></div><div class="skel skel-meta"></div></div>
+      </div>
+    </div>
+
+    <!-- AI section -->
+    <div class="section" id="section-ai">
+      <div class="section-header">
+        <div class="section-label">
+          <div class="section-dot" style="background: #A78BFA"></div>
+          <span class="section-title">AI World</span>
+        </div>
+        <span class="section-count" id="ai-count">—</span>
+      </div>
+      <div class="news-list" id="ai-list">
+        <!-- Skeleton -->
+        <div class="skeleton-item"><div class="skel skel-title"></div><div class="skel skel-meta"></div></div>
+        <div class="skeleton-item"><div class="skel skel-title-short"></div><div class="skel skel-meta"></div></div>
+        <div class="skeleton-item"><div class="skel skel-title"></div><div class="skel skel-meta"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/news-fetcher.js"></script>
+<script>
+// ─── App state ────────────────────────────────────────────────────────────────
+let settings = {};
+let newsData = null;
+let refreshTimer = null;
+let previousTitles = { electronics: new Set(), ai: new Set() };
+
+// ─── Time formatting ──────────────────────────────────────────────────────────
+function timeAgo(date) {
+  const diff = Date.now() - new Date(date).getTime();
+  const m = Math.floor(diff / 60000);
+  const h = Math.floor(m / 60);
+  const d = Math.floor(h / 24);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  if (h < 24) return `${h}h ago`;
+  return `${d}d ago`;
+}
+
+function fmtTime(ts) {
+  return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+// ─── Render news items ────────────────────────────────────────────────────────
+function renderItems(items, containerId, countId, accent, prevTitles) {
+  const container = document.getElementById(containerId);
+  const countEl = document.getElementById(countId);
+  const max = settings.compact ? 3 : 5;
+  const shown = items.slice(0, max);
+
+  countEl.textContent = `${shown.length} stories`;
+
+  if (shown.length === 0) {
+    container.innerHTML = `
+      <div class="state-placeholder">
+        <span class="placeholder-text">No recent stories found</span>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  shown.forEach((item, i) => {
+    const isNew = !prevTitles.has(item.title);
+    const div = document.createElement('div');
+    div.className = 'news-item fade-in' + (isNew && newsData ? ' is-new' : '');
+    div.style.animationDelay = `${i * 40}ms`;
+    div.title = item.title; // Full tooltip on hover
+
+    div.innerHTML = `
+      <div class="news-title">${escapeHtml(item.title)}</div>
+      <div class="news-meta">
+        <span class="news-source">${escapeHtml(item.source)}</span>
+        <span class="news-sep"></span>
+        <span class="news-time">${timeAgo(item.publishedAt)}</span>
+      </div>`;
+
+    div.addEventListener('click', () => {
+      window.electronAPI.openUrl(item.url);
+    });
+
+    container.appendChild(div);
+  });
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(str));
+  return d.innerHTML;
+}
+
+// ─── Refresh logic ────────────────────────────────────────────────────────────
+async function refresh() {
+  const indicator = document.getElementById('refresh-indicator');
+  const offlineBadge = document.getElementById('offline-badge');
+  indicator.classList.add('active');
+
+  // Rotate refresh button icon
+  const btnRefresh = document.getElementById('btn-refresh');
+  btnRefresh.style.opacity = '0.5';
+
+  try {
+    const data = await window.newsFetcher.fetchNews();
+
+    const prevElec = new Set(newsData?.electronics?.map(i => i.title) || []);
+    const prevAI = new Set(newsData?.ai?.map(i => i.title) || []);
+
+    newsData = data;
+    previousTitles = { electronics: prevElec, ai: prevAI };
+
+    renderItems(data.electronics, 'elec-list', 'elec-count', '#4ECDC4', prevElec);
+    renderItems(data.ai, 'ai-list', 'ai-count', '#A78BFA', prevAI);
+
+    document.getElementById('last-updated').textContent = `Updated ${fmtTime(data.fetchedAt)}`;
+    offlineBadge.classList.remove('visible');
+
+    // Cache
+    await window.electronAPI.saveCache({
+      electronics: data.electronics,
+      ai: data.ai,
+      fetchedAt: data.fetchedAt
+    });
+
+  } catch (e) {
+    // Try to use cached
+    offlineBadge.classList.add('visible');
+    if (!newsData) {
+      const cached = await window.electronAPI.getCache();
+      if (cached) {
+        newsData = { ...cached, online: false };
+        renderItems(cached.electronics || [], 'elec-list', 'elec-count', '#4ECDC4', new Set());
+        renderItems(cached.ai || [], 'ai-list', 'ai-count', '#A78BFA', new Set());
+        document.getElementById('last-updated').textContent = `Cached ${fmtTime(cached.fetchedAt)}`;
+      }
+    }
+  }
+
+  indicator.classList.remove('active');
+  btnRefresh.style.opacity = '';
+}
+
+// ─── Schedule refresh ─────────────────────────────────────────────────────────
+function scheduleRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  const intervalMs = (settings.refreshInterval || 60) * 60 * 1000;
+  refreshTimer = setInterval(refresh, intervalMs);
+}
+
+// ─── Apply theme ──────────────────────────────────────────────────────────────
+function applyTheme(theme) {
+  if (theme === 'auto') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.dataset.theme = prefersDark ? 'dark' : 'light';
+  } else {
+    document.documentElement.dataset.theme = theme;
+  }
+}
+
+// ─── Show/hide sections ───────────────────────────────────────────────────────
+function applySettings(s) {
+  settings = s;
+  applyTheme(s.theme);
+
+  document.getElementById('section-electronics').style.display =
+    s.showElectronics !== false ? '' : 'none';
+  document.getElementById('section-ai').style.display =
+    s.showAI !== false ? '' : 'none';
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+async function init() {
+  settings = await window.electronAPI.getSettings();
+  applySettings(settings);
+
+  // Wire up buttons
+  document.getElementById('btn-refresh').addEventListener('click', refresh);
+  document.getElementById('btn-settings').addEventListener('click', () => {
+    window.electronAPI.openSettings();
+  });
+  document.getElementById('btn-minimize').addEventListener('click', () => {
+    window.electronAPI.minimize();
+  });
+
+  // Listen for external triggers
+  window.electronAPI.onRefreshTrigger(refresh);
+  window.electronAPI.onSettingsChanged(newSettings => {
+    applySettings(newSettings);
+    scheduleRefresh();
+    refresh();
+  });
+
+  // Initial fetch
+  await refresh();
+  scheduleRefresh();
+}
+
+init();
+</script>
+</body>
+</html>
